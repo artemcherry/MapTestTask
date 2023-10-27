@@ -20,7 +20,7 @@ struct MapView: View {
                 ForEach(viewModel.locations) { location in
                     Annotation("", coordinate: location.coordinate) {
                         Image(.userPointer)
-                                               .foregroundColor(.pink)
+                            .foregroundColor(.pink)
                     }
                 }
             }
