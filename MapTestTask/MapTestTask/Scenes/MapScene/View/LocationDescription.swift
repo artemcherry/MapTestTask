@@ -23,6 +23,7 @@ struct LocationDescriptionView: View {
             } else {
                 
                 Text(address)
+                    .multilineTextAlignment(.center)
             }
         }
         .frame(width: 300)

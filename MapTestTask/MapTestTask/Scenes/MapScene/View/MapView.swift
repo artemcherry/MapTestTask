@@ -22,13 +22,7 @@ struct MapView: View {
                         .foregroundColor(.pink)
                 }
             }
-            .gesture(
-                DragGesture(minimumDistance: 1,
-                            coordinateSpace: .global)
-                .onChanged { _ in
-                    
-                    viewModel.isLoading.toggle()
-            })
+           
             .ignoresSafeArea(edges: .top)
             
             VStack {
@@ -86,12 +80,14 @@ struct MapView: View {
                 .padding(.bottom)
             }
             .padding(.horizontal)
-            .onChange(of: viewModel.isLoading) { newValue in
-                if !newValue {
-                    viewModel.onChange()
-                }
-            }
         }
+        .gesture(
+            DragGesture(minimumDistance: 10,
+                        coordinateSpace: .global)
+            .onChanged { _ in
+                
+                viewModel.isLoading = true
+        })
     }
 }
 

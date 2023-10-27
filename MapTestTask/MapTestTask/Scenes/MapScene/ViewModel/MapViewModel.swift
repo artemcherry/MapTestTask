@@ -13,7 +13,18 @@ final class MapViewModel: NSObject, ObservableObject, CLLocationManagerDelegate 
     
     private let locationManager = CLLocationManager()
     
-    @Published var isLoading: Bool = false
+    @Published var isLoading: Bool = false {
+        didSet {
+            
+            if isLoading == false {
+                onChange()
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                self.isLoading = false
+            }
+        }
+    }
+    
     @Published var currentAddress: String = ""
     @Published var locations: [Location] = []
     @Published var region: MKCoordinateRegion = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 40.75773, longitude: -73.985708), span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05))
