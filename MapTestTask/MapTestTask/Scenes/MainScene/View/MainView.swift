@@ -8,12 +8,13 @@
 import SwiftUI
 
 struct MainView: View {
-    
+  
+    @ObservedObject var viewModel: MainViewModel
     @State private var selectedTab: Int = 1
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            MapView(viewModel: .init())
+            MapView(viewModel: viewModel)
                 .tabItem {
                     
                     VStack {
@@ -22,7 +23,7 @@ struct MainView: View {
                     }
                 }
             
-            Text("Locations")
+            LocationsView(viewModel: viewModel)
                 .tabItem {
                     
                     VStack {
@@ -32,8 +33,4 @@ struct MainView: View {
                 }
         }
     }
-}
-
-#Preview {
-    MainView()
 }

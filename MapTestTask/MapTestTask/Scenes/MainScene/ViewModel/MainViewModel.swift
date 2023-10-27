@@ -1,5 +1,5 @@
 //
-//  MapViewModel.swift
+//  MainViewModel.swift
 //  MapTestTask
 //
 //  Created by Artem Vishniakov on 26.10.2023.
@@ -8,26 +8,20 @@
 import Foundation
 import MapKit
 import CoreLocation
+import SwiftUI
 
-final class MapViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
+final class MainViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     private let locationManager = CLLocationManager()
     
-    @Published var isLoading: Bool = false {
-        didSet {
-            
-            if isLoading == false {
-                onChange()
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                self.isLoading = false
-            }
-        }
-    }
-    
+    @Published var isLoading: Bool = false
+    @Published var mapCameraPostion = MapCameraPosition
+        .region(MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 40.75773, longitude: -73.985708),
+                                   span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)))
     @Published var currentAddress: String = ""
     @Published var locations: [Location] = []
-    @Published var region: MKCoordinateRegion = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 40.75773, longitude: -73.985708), span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05))
+    @Published var pointToAdd: CLLocationCoordinate2D = .init(latitude: 0, longitude: 0)
+    
     
     override init() {
         
@@ -39,16 +33,22 @@ final class MapViewModel: NSObject, ObservableObject, CLLocationManagerDelegate 
     }
     
     func addLocationButtonTapped() {
-        locations.append(.init(name: "pin", coordinate: CLLocationCoordinate2D(latitude: region.center.latitude, longitude: region.center.longitude)))
+        locations.append(.init(name: currentAddress, coordinate: pointToAdd))
     }
     
     func myLocationButtonTapped() {
         locationManager.requestLocation()
     }
     
-    func onChange() {
-       
-        geocode(latitude: region.center.latitude, longitude: region.center.longitude) { placemark, error in
+//MARK: - Получаем координаты для добавления точки
+    
+    func onChange(latitude: Double, longitude: Double) {
+        
+        pointToAdd = .init(latitude: latitude, longitude: longitude)
+        
+        isLoading = false
+        
+        geocode(latitude: latitude, longitude: longitude) { placemark, error in
           
             guard let placemark = placemark, error == nil else { return }
  
@@ -64,7 +64,7 @@ final class MapViewModel: NSObject, ObservableObject, CLLocationManagerDelegate 
     }
 }
 
-extension MapViewModel {
+extension MainViewModel {
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         
@@ -74,9 +74,9 @@ extension MapViewModel {
             
             guard let self else { return }
             
-            self.region = .init(center: locationCoordinates,
-                                span: MKCoordinateSpan(latitudeDelta: 0.05,
-                                                       longitudeDelta: 0.05))
+            self.mapCameraPostion = MapCameraPosition.region(MKCoordinateRegion(center: locationCoordinates, span: MKCoordinateSpan(latitudeDelta: 0.05,
+                                                                                                                             longitudeDelta: 0.05)))
+                
         }
     }
     
@@ -92,17 +92,19 @@ extension MapViewModel {
             
             let center = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
             let region = MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
-         
+            let cameraMap = MapCameraPosition.region(region)
+          
             DispatchQueue.main.async { [weak self] in
                 
                 guard let self else { return }
                 
-                self.region = region
+                self.mapCameraPostion = cameraMap
             }
-            onChange()
             
+            onChange(latitude: center.latitude, longitude: center.longitude)
+      
         @unknown default:
-            print("not location")
+            break
         }
     }
     

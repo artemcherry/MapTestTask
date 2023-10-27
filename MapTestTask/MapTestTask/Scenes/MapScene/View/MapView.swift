@@ -9,29 +9,38 @@ import SwiftUI
 import MapKit
 
 struct MapView: View {
-    
-    @ObservedObject var viewModel: MapViewModel
-    
+
+    @ObservedObject var viewModel: MainViewModel
+           
     var body: some View {
         
         ZStack {
-
-            Map(coordinateRegion: $viewModel.region, annotationItems: viewModel.locations) { location in
-                MapAnnotation(coordinate: location.coordinate) {
-                    Image(.userPointer)
-                        .foregroundColor(.pink)
+            
+            Map(position: $viewModel.mapCameraPostion) {
+                ForEach(viewModel.locations) { location in
+                    Annotation("", coordinate: location.coordinate) {
+                        Image(.userPointer)
+                                               .foregroundColor(.pink)
+                    }
                 }
             }
-           
-            .ignoresSafeArea(edges: .top)
-            
+            .onMapCameraChange(frequency: .onEnd) { mapCameraUpdateContext in
+                
+                viewModel.onChange(latitude: mapCameraUpdateContext.camera.centerCoordinate.latitude,
+                                   longitude: mapCameraUpdateContext.camera.centerCoordinate.longitude)
+            }
+            .onMapCameraChange(frequency: .continuous) { _ in
+                
+                viewModel.isLoading = true
+            }
+
             VStack {
                 
                 Image(.userPointer)
                     .foregroundColor(.cyan)
                     .padding(.bottom, 10)
                 
-                LocationDescriptionView(isLoading: $viewModel.isLoading, address: viewModel.currentAddress)
+                LocationDescriptionView(isLoading: viewModel.isLoading, address: viewModel.currentAddress)
             }
             
             VStack {
@@ -53,8 +62,10 @@ struct MapView: View {
                                     .cornerRadius(15)
                             }
                     }
+                    
                     Spacer()
                 }
+                
                 Spacer()
                 
                 HStack {
@@ -81,16 +92,5 @@ struct MapView: View {
             }
             .padding(.horizontal)
         }
-        .gesture(
-            DragGesture(minimumDistance: 10,
-                        coordinateSpace: .global)
-            .onChanged { _ in
-                
-                viewModel.isLoading = true
-        })
     }
-}
-
-#Preview {
-    MapView(viewModel: .init())
 }

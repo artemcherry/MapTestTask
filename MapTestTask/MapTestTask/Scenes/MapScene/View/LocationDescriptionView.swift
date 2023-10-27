@@ -9,7 +9,7 @@ import SwiftUI
 
 struct LocationDescriptionView: View {
     
-   @Binding var isLoading: Bool
+    var isLoading: Bool
     var address: String
     
     var body: some View {
