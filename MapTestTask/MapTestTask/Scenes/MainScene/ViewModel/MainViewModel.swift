@@ -52,10 +52,8 @@ final class MainViewModel: NSObject, ObservableObject, CLLocationManagerDelegate
           
             guard let placemark = placemark, error == nil else { return }
  
-            DispatchQueue.main.async {
 
                 self.currentAddress = (placemark.administrativeArea ?? "") + ", " +  (placemark.thoroughfare ?? "") + ", " + (placemark.subThoroughfare ?? "")
-            }
         }
     }
     
@@ -74,9 +72,10 @@ extension MainViewModel {
             
             guard let self else { return }
             
-            self.mapCameraPostion = MapCameraPosition.region(MKCoordinateRegion(center: locationCoordinates, span: MKCoordinateSpan(latitudeDelta: 0.05,
-                                                                                                                             longitudeDelta: 0.05)))
-                
+            self.mapCameraPostion = MapCameraPosition
+                .region(MKCoordinateRegion(center: locationCoordinates,
+                                           span: MKCoordinateSpan(latitudeDelta: 0.05,
+                                                                  longitudeDelta: 0.05)))
         }
     }
     
@@ -93,13 +92,8 @@ extension MainViewModel {
             let center = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
             let region = MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
             let cameraMap = MapCameraPosition.region(region)
-          
-            DispatchQueue.main.async { [weak self] in
-                
-                guard let self else { return }
-                
-                self.mapCameraPostion = cameraMap
-            }
+
+            self.mapCameraPostion = cameraMap
             
             onChange(latitude: center.latitude, longitude: center.longitude)
       
